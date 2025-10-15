@@ -52,14 +52,14 @@ yamllint .
 
 ## New Machine? Do This
 
-- [X] Install Homebrew and Python 3.11+
+- [x] Install Homebrew and Python 3.11+
 - [x] Clone this repository
-- [ ] Create and activate Python virtual environment
-- [ ] Install requirements: `pip install -r requirements.txt`
-- [ ] Install pre-commit hooks: `pre-commit install`
-- [ ] Configure Git user name and email
-- [ ] Generate SSH key pair and add to ssh-agent
-- [ ] Install VS Code and required extensions
-- [ ] Test Ansible connection to target hosts
-- [ ] Run `ansible-lint` and `yamllint` to verify setup
-- [ ] Create inventories directory and add your hosts
+- [x] Create and activate Python virtual environment
+- [x] Install requirements: `pip install -r requirements.txt`
+- [x] Install pre-commit hooks: `pre-commit install`
+- [x] Configure Git user name and email
+- [x] Generate SSH key pair and add to ssh-agent
+- [x] Install VS Code and required extensions
+- [x] Test Ansible connection to target hosts
+- [x] Run `ansible-lint` and `yamllint` to verify setup
+- [x] Create inventories directory and add your hosts
