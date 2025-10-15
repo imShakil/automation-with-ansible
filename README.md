@@ -50,6 +50,12 @@ ansible-lint playbooks/
 yamllint .
 ```
 
+## Corporate Environment
+
+- Set proxy: `export https_proxy=http://proxy.company.com:8080`
+- CA certificates: Add to `~/.ansible/ca-bundle.crt`
+- Update pip config for internal PyPI if needed
+
 ## New Machine? Do This
 
 - [x] Install Homebrew and Python 3.11+
@@ -63,3 +69,4 @@ yamllint .
 - [x] Test Ansible connection to target hosts
 - [x] Run `ansible-lint` and `yamllint` to verify setup
 - [x] Create inventories directory and add your hosts
+- [ ] Configure corporate proxy/CA certificates if needed
