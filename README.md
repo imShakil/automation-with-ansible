@@ -52,8 +52,8 @@ yamllint .
 
 ## New Machine? Do This
 
-- [ ] Install Homebrew and Python 3.11+
-- [ ] Clone this repository
+- [X] Install Homebrew and Python 3.11+
+- [x] Clone this repository
 - [ ] Create and activate Python virtual environment
 - [ ] Install requirements: `pip install -r requirements.txt`
 - [ ] Install pre-commit hooks: `pre-commit install`
