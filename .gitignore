@@ -1,4 +1,85 @@
-.venv
-**/.venv
-**/.env
-**/.ansible
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Ansible
+.ansible/
+*.retry
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform.lock.hcl
+crash.log
+
+# Docker
+# (Dockerfile and .dockerignore should be committed)
+
+# Kubernetes
+*.kubeconfig
+
+# Vagrant
+.vagrant/
+
+# Packer
+packer_cache/
+*.box
+
+# Jenkins
+# (Jenkinsfile should be committed)
+
+# GitLab CI
+# (.gitlab-ci.yml should be committed)
+
+# GitHub Actions
+# (.github/workflows/ should be committed)
+
+# AWS
+.aws/
+*.pem
+*.key
+
+# Azure
+.azure/
+
+# GCP
+.gcp/
+*.json
+
+# Helm
+charts/*/charts/
+charts/*/requirements.lock
+
+# Logs
+*.log
+logs/
+
+# Secrets
+secrets/
+*.secret
+*.crt
+*.csr
+
+# Environment
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
