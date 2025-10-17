@@ -1,0 +1,59 @@
+---
+- name: Install and Configure Nginx Server
+  hosts: app
+  become: true
+  tasks:
+    - name: Ensure apt cache is updated
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install Nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+
+    - name: Ensure Nginx service is enabled and running
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+- name: Deploy Mini Finance Project
+  hosts: app
+  become: true
+  vars:
+    project_repo: "https://github.com/imShakil/mini_finance"
+    project_src: "/tmp/mini_finance"
+    nginx_root: "/var/www/html"
+
+  tasks:
+    - name: Clone Mini Finance Project
+      ansible.builtin.git:
+        repo: "{{ project_repo }}"
+        dest: "{{ project_src }}"
+        version: HEAD
+        force: true
+      tags: ["skip_ansible_lint"]
+
+    - name: Sync project files to Nginx root
+      ansible.builtin.copy:
+        src: "{{ project_src }}/"
+        dest: "{{ nginx_root }}/"
+        owner: www-data
+        group: www-data
+        mode: '0644'
+        remote_src: true
+      delegate_to: "{{ inventory_hostname }}"
+
+    - name: Set proper permissions for web root
+      ansible.builtin.file:
+        path: "{{ nginx_root }}"
+        owner: www-data
+        group: www-data
+        recurse: true
+
+    - name: Restart Nginx to apply changes
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
