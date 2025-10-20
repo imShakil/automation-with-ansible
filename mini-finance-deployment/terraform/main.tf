@@ -23,7 +23,7 @@ module "network" {
 }
 
 module "vm" {
-  source = "../../automation-on-azure/terraform/modules/vm"
+  source = "git::https://github.com/imShakil/automation-with-ansible.git//automation-on-azure/terraform/modules/vm"
   prefix = var.prefix
   resource_group = azurerm_resource_group.miniFinance-rg.name
   region = var.region
