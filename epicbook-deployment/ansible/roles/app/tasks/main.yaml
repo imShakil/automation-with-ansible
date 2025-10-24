@@ -1,0 +1,29 @@
+- name: Update system packages
+  ansible.builtin.dnf:
+    update_cache: true
+
+- name: Install required packages
+  ansible.builtin.dnf:
+    name:
+      - git
+      - nodejs
+      - npm
+      - mariadb1011-server
+      - python3-pip
+    state: present
+  tags: ["packages"]
+
+- name: Clone project repository
+  ansible.builtin.git:
+    repo: "{{ project_repo_url }}"
+    dest: "{{ project_dir }}"
+    version: "main"
+    force: true
+
+- name: Start and enable MariaDB
+  ansible.builtin.service:
+    name: mariadb
+    state: started
+    enabled: true
+  register: app_mariadb_service
+  tags: ["database"]

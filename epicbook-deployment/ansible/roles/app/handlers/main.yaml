@@ -1,0 +1,12 @@
+- name: Restart mariadb
+  ansible.builtin.service:
+    name: mariadb
+    state: restarted
+
+- name: Wait for MariaDB to be ready
+  ansible.builtin.wait_for:
+    port: 3306
+    host: localhost
+    timeout: 60
+  when: app_mariadb_service.changed
+  tags: ['database']

@@ -1,0 +1,66 @@
+---
+- name: Install PyMySQL
+  ansible.builtin.pip:
+    name: PyMySQL
+    state: present
+  tags: ['database']
+
+- name: Secure MariaDB installation
+  community.mysql.mysql_user:
+    name: root
+    login_unix_socket: "{{ mysql_socket }}"
+    check_implicit_admin: true
+  tags: ['database']
+
+- name: Create application database
+  community.mysql.mysql_db:
+    name: "{{ db_name }}"
+    state: present
+    login_unix_socket: "{{ mysql_socket }}"
+  tags: ['database']
+
+- name: Create database user
+  community.mysql.mysql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    priv: "{{ db_name }}.*:ALL"
+    state: present
+    login_user: root
+    login_unix_socket: "{{ mysql_socket }}"
+  tags: ['database']
+
+- name: Check if schema exists
+  community.mysql.mysql_query:
+    login_user: "{{ db_user }}"
+    login_password: "{{ db_password }}"
+    login_db: "{{ db_name }}"
+    login_unix_socket: "{{ mysql_socket }}"
+    query: "SHOW TABLES LIKE 'Author'"
+  register: database_schema_check
+  failed_when: false
+  tags: ['database']
+
+- name: Import database schema
+  community.mysql.mysql_db:
+    name: "{{ db_name }}"
+    state: import
+    target: "{{ project_dir }}/db/BuyTheBook_Schema.sql"
+    login_user: "{{ db_user }}"
+    login_password: "{{ db_password }}"
+    login_unix_socket: "{{ mysql_socket }}"
+  when: database_schema_check.rowcount[0] == 0
+  tags: ['database']
+
+- name: Import seed data
+  community.mysql.mysql_db:
+    name: "{{ db_name }}"
+    state: import
+    target: "{{ item }}"
+    login_user: "{{ db_user }}"
+    login_password: "{{ db_password }}"
+    login_unix_socket: "{{ mysql_socket }}"
+  loop:
+    - "{{ project_dir }}/db/author_seed.sql"
+    - "{{ project_dir }}/db/books_seed.sql"
+  when: database_schema_check.rowcount[0] == 0
+  tags: ['database']

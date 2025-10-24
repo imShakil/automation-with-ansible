@@ -1,0 +1,27 @@
+[mysqld]
+bind-address = {{ mysql_bind_address }}
+port = 3306
+datadir = /var/lib/mysql
+socket = /var/lib/mysql/mysql.sock
+log-error = /var/log/mariadb/mariadb.log
+pid-file = /var/run/mariadb/mariadb.pid
+
+# Security settings
+skip-networking = false
+skip-name-resolve = true
+
+# Performance settings
+innodb_buffer_pool_size = 128M
+max_connections = 100
+query_cache_size = 16M
+query_cache_type = 1
+
+# Character set
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+[mysql]
+default-character-set = utf8mb4
+
+[client]
+default-character-set = utf8mb4

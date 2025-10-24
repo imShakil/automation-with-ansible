@@ -1,0 +1,6 @@
+---
+- name: Restart epicbook
+  ansible.builtin.systemd:
+    name: epicbook
+    state: restarted
+    daemon_reload: true

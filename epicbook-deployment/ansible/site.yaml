@@ -1,0 +1,12 @@
+- name: Deploy EpicBook Application on AWS EC2 Instance
+  hosts: app
+  become: true
+  vars_files:
+    - ../vars/env.yml
+    - ../vars/vault.yml
+
+  roles:
+    - app
+    - database
+    - epicbook
+    - nginx

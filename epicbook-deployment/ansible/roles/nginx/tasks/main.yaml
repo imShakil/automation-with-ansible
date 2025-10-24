@@ -1,0 +1,29 @@
+- name: Install nginx
+  ansible.builtin.dnf:
+    name: nginx
+    state: present
+
+- name: Configure default nginx config
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    mode: '0644'
+    backup: true
+  notify: Restart nginx
+  tags: ['nginx']
+
+- name: Create nginx log directory
+  ansible.builtin.file:
+    path: /var/log/nginx
+    state: directory
+    owner: nginx
+    group: nginx
+    mode: '0755'
+  tags: ['nginx']
+
+- name: Start and enable nginx
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+  tags: ['nginx']

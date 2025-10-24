@@ -16,4 +16,9 @@ repos:
     rev: v25.9.2
     hooks:
       - id: ansible-lint
-        args: ["--force-color", "--offline"]
+        name: ansible-lint (system)
+        entry: ansible-lint
+        types:
+          - yaml
+        description: Run ansible-lint
+        args: ["--offline"]

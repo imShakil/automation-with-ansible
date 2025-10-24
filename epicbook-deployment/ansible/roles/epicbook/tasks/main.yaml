@@ -1,0 +1,43 @@
+- name: Install npm packages
+  community.general.npm:
+    path: "{{ project_dir }}"
+    state: present
+    production: true
+  tags: ['app']
+
+- name: Setup database config
+  ansible.builtin.template:
+    src: config.json.j2
+    dest: "{{ project_dir }}/config/config.json"
+    mode: '0640'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  notify: Restart epicbook
+  tags: ['app']
+
+- name: Create systemd service
+  ansible.builtin.template:
+    src: epicbook.service.j2
+    dest: /etc/systemd/system/epicbook.service
+    mode: '0644'
+  notify: Restart epicbook
+  tags: ['app']
+
+- name: Start and enable epicbook service
+  ansible.builtin.systemd:
+    name: epicbook
+    state: started
+    enabled: true
+    daemon_reload: true
+  tags: ['app']
+
+- name: Wait for application to be ready
+  ansible.builtin.uri:
+    url: "http://localhost:8080"
+    method: GET
+    status_code: [200, 302]
+  register: epicbook_app_health
+  until: epicbook_app_health.status in [200, 302]
+  retries: 30
+  delay: 10
+  tags: ['app']
