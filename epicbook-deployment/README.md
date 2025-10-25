@@ -140,7 +140,7 @@ terraform destroy
 
 ### 🏗️ Terraform Directory (Infrastructure Layer)
 
-#### Core Files
+#### Terraform Root Files
 
 - **`main.tf`** - Primary infrastructure definitions (VPC, EC2, security groups)
 - **`variables.tf`** - Input parameters (instance type, AMI ID, region)
@@ -157,7 +157,7 @@ terraform destroy
 
 ### 🔧 Ansible Directory (Configuration Layer)
 
-#### Core Files
+#### Ansible Core Files
 
 - **`ansible.cfg`** - Ansible behavior settings (SSH options, inventory path)
 - **`site.yaml`** - Main playbook orchestrating all roles
@@ -208,3 +208,48 @@ Each role handles a specific service:
 - Least privilege security groups
 
 This structure follows DevOps best practices, making the deployment process repeatable, scalable, and maintainable across different environments.
+
+## Ansible Lint Challenges
+
+### Common Issues & Solutions
+
+**Problem**: Ansible runs fine, but ansible-lint fails with strict rules
+
+**Common Lint Errors**:
+
+- `name[missing]`: Every task needs a descriptive name
+- `yaml[line-length]`: Lines exceed 160 characters
+- `risky-file-permissions`: File operations need explicit mode
+- `package-latest`: Use specific versions instead of `state: latest`
+- `command-instead-of-module`: Use dedicated modules over shell/command
+
+**Quick Fixes**:
+
+```yaml
+# Bad
+- yum: name=nginx state=latest
+
+# Good
+- name: Install nginx web server
+  yum:
+    name: nginx
+    state: present
+```
+
+**Lint Configuration**:
+
+Create `.ansible-lint` to customize rules:
+```yaml
+skip_list:
+  - yaml[line-length]
+  - name[casing]
+```
+
+**Pro Tips**:
+
+- Run `ansible-lint --list-rules` to see all rules
+- Use `ansible-lint --fix` for auto-corrections
+- Start with basic rules, gradually enforce stricter ones
+- Focus on security and maintainability rules first
+
+Remember: ansible-lint enforces best practices that make your code more maintainable and secure in the long run, even if it feels restrictive initially.
