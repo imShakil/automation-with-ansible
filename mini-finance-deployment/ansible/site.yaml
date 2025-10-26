@@ -28,13 +28,16 @@
     nginx_root: "/var/www/html"
 
   tasks:
+    - name: Remove Old files
+      ansible.builtin.file:
+        path: "{{ project_src }}"
+        state: absent
+
     - name: Clone Mini Finance Project
       ansible.builtin.git:
         repo: "{{ project_repo }}"
         dest: "{{ project_src }}"
-        version: HEAD
-        force: true
-      tags: ["skip_ansible_lint"]
+        version: 'main'
 
     - name: Sync project files to Nginx root
       ansible.builtin.copy:
@@ -42,18 +45,26 @@
         dest: "{{ nginx_root }}/"
         owner: www-data
         group: www-data
-        mode: '0644'
+        mode: '0755'
         remote_src: true
-      delegate_to: "{{ inventory_hostname }}"
-
-    - name: Set proper permissions for web root
-      ansible.builtin.file:
-        path: "{{ nginx_root }}"
-        owner: www-data
-        group: www-data
-        recurse: true
 
     - name: Restart Nginx to apply changes
       ansible.builtin.service:
         name: nginx
         state: restarted
+
+- name: Test Deployment
+  hosts: all
+  become: true
+  tasks:
+    - name: Debug ansible_nodename
+      ansible.builtin.debug:
+        msg: "Hostname is: {{ inventory_hostname }}"
+    - name: Test locally
+      ansible.builtin.uri:
+        url: http://127.0.0.1
+        return_content: true
+    - name: Test public Access
+      ansible.builtin.uri:
+        url: "http://{{ inventory_hostname }}"
+        return_content: true
