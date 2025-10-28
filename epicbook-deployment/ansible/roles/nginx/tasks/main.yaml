@@ -27,3 +27,13 @@
     state: started
     enabled: true
   tags: ['nginx']
+
+- name: Test Application locally
+  ansible.builtin.uri:
+    url: 'http://localhost:8080'
+    return_content: true
+
+- name: Test Application Public Access
+  ansible.builtin.uri:
+    url: 'http://{{ inventory_hostname }}'
+    return_content: true

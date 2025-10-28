@@ -253,3 +253,197 @@ skip_list:
 - Focus on security and maintainability rules first
 
 Remember: ansible-lint enforces best practices that make your code more maintainable and secure in the long run, even if it feels restrictive initially.
+
+## Deployment Workflow
+
+### Step-by-Step Process
+
+1. **Infrastructure Provisioning** (Terraform)
+   ```bash
+   cd terraform
+   terraform init
+   terraform validate
+   terraform plan -out=tfplan
+   terraform apply tfplan
+   ```
+
+2. **Inventory Generation** (Automated)
+   - Terraform automatically creates `ansible/inventory.ini`
+   - Contains EC2 public IP and SSH configuration
+
+3. **Application Deployment** (Ansible)
+   ```bash
+   cd ../ansible
+   ansible-playbook -i inventory.ini site.yaml --check  # Dry run
+   ansible-playbook -i inventory.ini site.yaml
+   ```
+
+4. **Verification**
+   ```bash
+   # Test application endpoint
+   curl http://<EC2_PUBLIC_IP>
+
+   # Check service status
+   ansible app -i inventory.ini -m shell -a "systemctl status epicbook nginx mariadb"
+   ```
+
+### Deployment Timeline
+
+- **Terraform**: ~3-5 minutes (VPC, EC2, Security Groups)
+- **Ansible**: ~8-12 minutes (Package installation, app setup)
+- **Total**: ~15 minutes for complete deployment
+
+## Troubleshooting Guide
+
+### Common Issues
+
+#### 1. SSH Connection Failures
+```bash
+# Problem: Permission denied (publickey)
+# Solution: Verify SSH key permissions
+chmod 600 ~/.ssh/id_rsa
+ssh-add ~/.ssh/id_rsa
+```
+
+#### 2. Terraform State Lock
+```bash
+# Problem: State locked by another process
+# Solution: Force unlock (use carefully)
+terraform force-unlock <LOCK_ID>
+```
+
+#### 3. Ansible Task Failures
+```bash
+# Problem: Package installation fails
+# Solution: Check connectivity and retry
+ansible app -i inventory.ini -m ping
+ansible-playbook -i inventory.ini site.yaml --limit failed_hosts
+```
+
+#### 4. Application Not Accessible
+```bash
+# Check security group rules
+aws ec2 describe-security-groups --group-ids <SG_ID>
+
+# Verify service status on target host
+ssh ec2-user@<PUBLIC_IP> "sudo systemctl status epicbook nginx"
+```
+
+### Debug Commands
+
+```bash
+# Ansible verbose output
+ansible-playbook -i inventory.ini site.yaml -vvv
+
+# Terraform debug logging
+export TF_LOG=DEBUG
+terraform apply
+
+# Check application logs
+ssh ec2-user@<PUBLIC_IP> "sudo journalctl -u epicbook -f"
+```
+
+## Security Considerations
+
+### Network Security
+- VPC with private subnets for database isolation
+- Security groups with minimal required ports (22, 80, 443)
+- No direct internet access to database
+
+### Application Security
+- Ansible Vault for sensitive data encryption
+- SSH key-based authentication only
+- Regular security updates via package management
+
+### Best Practices Implemented
+- Least privilege access principles
+- Encrypted secrets management
+- Infrastructure as Code for audit trails
+- Automated deployment reduces human error
+
+## Performance Optimization
+
+### Infrastructure Tuning
+- **Instance Type**: t2.micro for development, consider t3.medium+ for production
+- **Storage**: GP3 volumes for better IOPS performance
+- **Networking**: Placement groups for multi-instance deployments
+
+### Application Optimization
+- **Nginx**: Gzip compression, static file caching
+- **Node.js**: PM2 process manager for clustering
+- **Database**: Connection pooling, query optimization
+
+### Monitoring Setup
+```bash
+# CloudWatch agent installation
+ansible app -i inventory.ini -m yum -a "name=amazon-cloudwatch-agent state=present"
+
+# Application health checks
+curl -f http://<PUBLIC_IP>/health || echo "Health check failed"
+```
+
+## Lessons Learned
+
+### What Worked Well
+1. **Modular Terraform Design**: Reusable VPC and instance modules
+2. **Ansible Role Structure**: Clear separation of concerns
+3. **Automated Inventory**: Seamless Terraform-to-Ansible handoff
+4. **Template-Driven Config**: Jinja2 templates for environment flexibility
+
+### Challenges Encountered
+1. **Ansible Lint Compliance**: Required significant refactoring for best practices
+2. **SSH Key Management**: Initial permission issues with key files
+3. **Service Dependencies**: Ensuring proper startup order for database and app
+4. **Network Timing**: Occasional delays in EC2 instance readiness
+
+### Improvements for Production
+1. **Multi-AZ Deployment**: High availability across availability zones
+2. **Load Balancer**: Application Load Balancer for traffic distribution
+3. **RDS Database**: Managed database service instead of self-hosted MariaDB
+4. **CI/CD Pipeline**: GitLab/GitHub Actions for automated deployments
+5. **Monitoring**: CloudWatch, Prometheus, or DataDog integration
+6. **Backup Strategy**: Automated database and application backups
+
+### Cost Optimization
+- **Spot Instances**: 70% cost reduction for non-critical environments
+- **Reserved Instances**: Long-term cost savings for production
+- **Auto Scaling**: Dynamic capacity based on demand
+- **Resource Tagging**: Cost allocation and tracking
+
+## Future Enhancements
+
+### Short Term (1-2 months)
+- [ ] Implement SSL/TLS certificates (Let's Encrypt)
+- [ ] Add application health checks and monitoring
+- [ ] Create staging environment
+- [ ] Implement log aggregation (ELK stack)
+
+### Medium Term (3-6 months)
+- [ ] Migrate to container-based deployment (Docker + ECS)
+- [ ] Implement blue-green deployment strategy
+- [ ] Add comprehensive test suite
+- [ ] Set up disaster recovery procedures
+
+### Long Term (6+ months)
+- [ ] Kubernetes migration for microservices architecture
+- [ ] Multi-region deployment for global availability
+- [ ] Advanced security scanning and compliance
+- [ ] Machine learning-based performance optimization
+
+## Conclusion
+
+This EpicBook deployment project successfully demonstrates Infrastructure as Code principles using Terraform and Ansible. The combination provides:
+
+- **Repeatability**: Consistent deployments across environments
+- **Scalability**: Modular design supports growth
+- **Maintainability**: Clear code structure and documentation
+- **Security**: Best practices for cloud deployments
+
+The project serves as a solid foundation for production-ready applications with proper CI/CD integration and monitoring solutions.
+
+---
+
+**Project Duration**: 2 weeks
+**Team Size**: 1 developer
+**Technologies**: Terraform, Ansible, AWS, Node.js, MariaDB, Nginx
+**Deployment Target**: AWS ap-southeast-1 region
