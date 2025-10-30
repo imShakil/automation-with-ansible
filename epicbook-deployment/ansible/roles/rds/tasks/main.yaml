@@ -1,0 +1,64 @@
+---
+- name: Install PyMySQL
+  ansible.builtin.pip:
+    name: PyMySQL
+    state: present
+  tags: ['database']
+- name: Create App Database
+  community.mysql.mysql_db:
+    name: "{{ db_name }}"
+    state: present
+    login_host: "{{ rds_endpoint }}"
+    login_user: "{{ mysql_admin_user }}"
+    login_password: "{{ mysql_admin_password }}"
+  tags: ['database']
+- name: Create database user
+  community.mysql.mysql_user:
+    name: "{{ db_user }}"
+    host: "%"
+    password: "{{ db_password }}"
+    priv: "{{ db_name }}.*:ALL"
+    state: present
+    login_user: "{{ mysql_admin_user }}"
+    login_password: "{{ mysql_admin_password }}"
+    login_host: "{{ rds_endpoint }}"
+  tags: ['database']
+
+- name: Check if rds_schema exists
+  community.mysql.mysql_query:
+    login_user: "{{ db_user }}"
+    login_password: "{{ db_password }}"
+    login_host: "{{ rds_endpoint }}"
+    login_db: "{{ db_name }}"
+    query: "SHOW TABLES LIKE 'Author'"
+  register: rds_schema_check
+  failed_when: false
+  tags: ['database']
+- name: Debug rds chema check
+  ansible.builtin.debug:
+    var: rds_schema_check
+
+- name: Import database schema
+  community.mysql.mysql_db:
+    name: "{{ db_name }}"
+    state: import
+    target: "{{ project_dir }}/db/BuyTheBook_Schema.sql"
+    login_user: "{{ db_user }}"
+    login_password: "{{ db_password }}"
+    login_host: "{{ rds_endpoint }}"
+  when: rds_schema_check.rowcount[0] == 0
+  tags: ['database']
+
+- name: Import seed data
+  community.mysql.mysql_db:
+    name: "{{ db_name }}"
+    state: import
+    target: "{{ item }}"
+    login_user: "{{ db_user }}"
+    login_password: "{{ db_password }}"
+    login_host: "{{ rds_endpoint }}"
+  loop:
+    - "{{ project_dir }}/db/author_seed.sql"
+    - "{{ project_dir }}/db/books_seed.sql"
+  when: rds_schema_check.rowcount[0] == 0
+  tags: ['database']

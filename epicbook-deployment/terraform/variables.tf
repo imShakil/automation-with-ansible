@@ -28,3 +28,17 @@ variable "ssh_key_pair" {
     ssh_key_path = "~/.ssh/id_rsa.pub"
   }
 }
+
+
+# RDS Information
+
+variable "rds_name" {
+  default = "epicbook"
+}
+variable "rds_admin" {
+  default = "epicbook"
+}
+
+variable "rds_admin_password" {
+  default = "epicbook"
+}
