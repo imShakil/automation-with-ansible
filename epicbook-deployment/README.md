@@ -62,7 +62,7 @@ This configures:
 
 ### Ansible Variables
 
-- `project_repo_url`: https://github.com/pravinmishraaws/theepicbook
+- `project_repo_url`: [https://github.com/pravinmishraaws/theepicbook](https://github.com/pravinmishraaws/theepicbook)
 - `db_name`: bookstore
 - `db_user`: theepicbook
 - Application runs on port 8080, proxied via Nginx on port 80
@@ -84,58 +84,52 @@ terraform destroy
 
 ## File Structure
 
-```sh
+```shell
 ├── README.md
 ├── ansible
-│   ├── ansible.cfg
-│   ├── inventory.ini
-│   ├── site.yaml
-│   ├── inventories
-│   │   └── inventory.ini
-│   ├── roles
-│   │   ├── app
-│   │   │   ├── handlers
-│   │   │   │   └── main.yaml
-│   │   │   ├── tasks
-│   │   │   │   └── main.yaml
-│   │   │   └── templates
-│   │   │       └── my.cnf.j2
-│   │   ├── database
-│   │   │   └── tasks
-│   │   │       └── main.yaml
-│   │   ├── epicbook
-│   │   │   ├── handlers
-│   │   │   │   └── main.yaml
-│   │   │   ├── tasks
-│   │   │   │   └── main.yaml
-│   │   │   └── templates
-│   │   │       ├── config.json.j2
-│   │   │       └── epicbook.service.j2
-│   │   └── nginx
-│   │       ├── handlers
-│   │       │   └── main.yaml
-│   │       ├── tasks
-│   │       │   └── main.yaml
-│   │       └── templates
-│   │           └── nginx.conf.j2
-│   └── vars
-│       ├── env.yml
-│       └── vault.yml
+│   ├── ansible.cfg
+│   ├── inventory.ini
+│   ├── site.yaml
+│   ├── roles
+│   │   ├── app
+│   │   │   ├── handlers
+│   │   │   │   └── main.yaml
+│   │   │   ├── tasks
+│   │   │   │   └── main.yaml
+│   │   │   └── templates
+│   │   │       └── my.cnf.j2
+│   │   ├── database
+│   │   │   └── tasks
+│   │   │       └── main.yaml
+│   │   ├── epicbook
+│   │   │   ├── handlers
+│   │   │   │   └── main.yaml
+│   │   │   ├── tasks
+│   │   │   │   └── main.yaml
+│   │   │   └── templates
+│   │   │       ├── config.json.j2
+│   │   │       └── epicbook.service.j2
+│   │   ├── nginx
+│   │   │   ├── handlers
+│   │   │   │   └── main.yaml
+│   │   │   ├── tasks
+│   │   │   │   └── main.yaml
+│   │   │   └── templates
+│   │   │       └── nginx.conf.j2
+│   │   └── rds
+│   │       └── tasks
+│   │           └── main.yaml
+│   └── vars
+│       ├── env.yml
+│       ├── rds.yml
+│       └── vault.yml
 └── terraform
     ├── backend.tf
+    ├── deployment.tfplan
     ├── main.tf
     ├── outputs.tf
     ├── provider.tf
-    ├── variables.tf
-    └── modules
-        ├── instance
-        │   ├── main.tf
-        │   ├── outputs.tf
-        │   └── variables.tf
-        └── vpc
-            ├── main.tf
-            ├── outputs.tf
-            └── variables.tf
+    └── variables.tf
 ```
 
 ## Project Structure Overview
@@ -241,6 +235,7 @@ This structure follows DevOps best practices, making the deployment process repe
 **Lint Configuration**:
 
 Create `.ansible-lint` to customize rules:
+
 ```yaml
 skip_list:
   - yaml[line-length]
@@ -261,6 +256,7 @@ Remember: ansible-lint enforces best practices that make your code more maintain
 ### Step-by-Step Process
 
 1. **Infrastructure Provisioning** (Terraform)
+
    ```bash
    cd terraform
    terraform init
@@ -274,6 +270,7 @@ Remember: ansible-lint enforces best practices that make your code more maintain
    - Contains EC2 public IP and SSH configuration
 
 3. **Application Deployment** (Ansible)
+
    ```bash
    cd ../ansible
    ansible-playbook -i inventory.ini site.yaml --check  # Dry run
@@ -281,6 +278,7 @@ Remember: ansible-lint enforces best practices that make your code more maintain
    ```
 
 4. **Verification**
+
    ```bash
    # Test application endpoint
    curl http://<EC2_PUBLIC_IP>
@@ -300,6 +298,7 @@ Remember: ansible-lint enforces best practices that make your code more maintain
 ### Common Issues
 
 #### 1. SSH Connection Failures
+
 ```bash
 # Problem: Permission denied (publickey)
 # Solution: Verify SSH key permissions
@@ -308,6 +307,7 @@ ssh-add ~/.ssh/id_rsa
 ```
 
 #### 2. Terraform State Lock
+
 ```bash
 # Problem: State locked by another process
 # Solution: Force unlock (use carefully)
@@ -315,6 +315,7 @@ terraform force-unlock <LOCK_ID>
 ```
 
 #### 3. Ansible Task Failures
+
 ```bash
 # Problem: Package installation fails
 # Solution: Check connectivity and retry
@@ -323,6 +324,7 @@ ansible-playbook -i inventory.ini site.yaml --limit failed_hosts
 ```
 
 #### 4. Application Not Accessible
+
 ```bash
 # Check security group rules
 aws ec2 describe-security-groups --group-ids <SG_ID>
@@ -348,16 +350,19 @@ ssh ec2-user@<PUBLIC_IP> "sudo journalctl -u epicbook -f"
 ## Security Considerations
 
 ### Network Security
+
 - VPC with private subnets for RDS database isolation
 - Security groups with minimal required ports (22, 80, 443, 3306)
 - RDS in private subnet with no direct internet access
 
 ### Application Security
+
 - Ansible Vault for sensitive data encryption
 - SSH key-based authentication only
 - Regular security updates via package management
 
 ### Best Practices Implemented
+
 - Least privilege access principles
 - Encrypted secrets management
 - Infrastructure as Code for audit trails
@@ -366,16 +371,19 @@ ssh ec2-user@<PUBLIC_IP> "sudo journalctl -u epicbook -f"
 ## Performance Optimization
 
 ### Infrastructure Tuning
+
 - **Instance Type**: t2.micro for development, consider t3.medium+ for production
 - **Storage**: GP3 volumes for better IOPS performance
 - **Networking**: Placement groups for multi-instance deployments
 
 ### Application Optimization
+
 - **Nginx**: Gzip compression, static file caching
 - **Node.js**: PM2 process manager for clustering
 - **Database**: Connection pooling, query optimization
 
 ### Monitoring Setup
+
 ```bash
 # CloudWatch agent installation
 ansible app -i inventory.ini -m yum -a "name=amazon-cloudwatch-agent state=present"
@@ -387,18 +395,21 @@ curl -f http://<PUBLIC_IP>/health || echo "Health check failed"
 ## Lessons Learned
 
 ### What Worked Well
+
 1. **Modular Terraform Design**: Reusable VPC and instance modules
 2. **Ansible Role Structure**: Clear separation of concerns
 3. **Automated Inventory**: Seamless Terraform-to-Ansible handoff
 4. **Template-Driven Config**: Jinja2 templates for environment flexibility
 
 ### Challenges Encountered
+
 1. **Ansible Lint Compliance**: Required significant refactoring for best practices
 2. **SSH Key Management**: Initial permission issues with key files
 3. **Service Dependencies**: Ensuring proper startup order for database and app
 4. **Network Timing**: Occasional delays in EC2 instance readiness
 
 ### Improvements for Production
+
 1. **Multi-AZ RDS**: High availability database across availability zones
 2. **Load Balancer**: Application Load Balancer for traffic distribution
 3. **RDS Scaling**: Read replicas and automated scaling
@@ -416,18 +427,21 @@ curl -f http://<PUBLIC_IP>/health || echo "Health check failed"
 ## Future Enhancements
 
 ### Short Term (1-2 months)
+
 - [ ] Implement SSL/TLS certificates (Let's Encrypt)
 - [ ] Add application health checks and monitoring
 - [ ] Create staging environment
 - [ ] Implement log aggregation (ELK stack)
 
 ### Medium Term (3-6 months)
+
 - [ ] Migrate to container-based deployment (Docker + ECS)
 - [ ] Implement blue-green deployment strategy
 - [ ] Add comprehensive test suite
 - [ ] Set up disaster recovery procedures
 
 ### Long Term (6+ months)
+
 - [ ] Kubernetes migration for microservices architecture
 - [ ] Multi-region deployment for global availability
 - [ ] Advanced security scanning and compliance
