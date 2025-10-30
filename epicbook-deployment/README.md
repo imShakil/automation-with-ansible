@@ -4,8 +4,8 @@ Automated deployment of the EpicBook Node.js application on AWS EC2 using Terraf
 
 ## Architecture
 
-- **Infrastructure**: AWS VPC, EC2 instance, Security Groups
-- **Application**: Node.js EpicBook app with MariaDB database
+- **Infrastructure**: AWS VPC, EC2 instance, RDS MySQL, Security Groups
+- **Application**: Node.js EpicBook app with AWS RDS MySQL database
 - **Web Server**: Nginx reverse proxy
 - **Region**: ap-southeast-1 (Singapore)
 
@@ -29,9 +29,10 @@ terraform apply -auto-approve
 
 This creates:
 
-- VPC with public subnet (10.0.0.0/16)
+- VPC with public/private subnets (10.0.0.0/16)
 - EC2 instance (t2.micro, Amazon Linux 2023)
-- Security groups (SSH, HTTP, HTTPS)
+- RDS MySQL instance (db.t3.micro)
+- Security groups (SSH, HTTP, HTTPS, MySQL)
 - Auto-generates Ansible inventory
 
 ### 2. Deploy Application
@@ -43,8 +44,9 @@ ansible-playbook -i inventory.ini site.yaml
 
 This configures:
 
-- System packages (Node.js, MariaDB, Nginx)
+- System packages (Node.js, MySQL client, Nginx)
 - EpicBook application from GitHub
+- Database connection to RDS MySQL
 - Database schema and seed data
 - Nginx reverse proxy
 - Systemd services
@@ -168,7 +170,7 @@ terraform destroy
 Each role handles a specific service:
 
 - **`app/`** - System packages and basic server setup
-- **`database/`** - MariaDB installation and configuration
+- **`database/`** - MySQL client and RDS connection setup
 - **`epicbook/`** - Node.js application deployment
 - **`nginx/`** - Web server and reverse proxy setup
 
@@ -284,7 +286,7 @@ Remember: ansible-lint enforces best practices that make your code more maintain
    curl http://<EC2_PUBLIC_IP>
 
    # Check service status
-   ansible app -i inventory.ini -m shell -a "systemctl status epicbook nginx mariadb"
+   ansible app -i inventory.ini -m shell -a "systemctl status epicbook nginx"
    ```
 
 ### Deployment Timeline
@@ -346,9 +348,9 @@ ssh ec2-user@<PUBLIC_IP> "sudo journalctl -u epicbook -f"
 ## Security Considerations
 
 ### Network Security
-- VPC with private subnets for database isolation
-- Security groups with minimal required ports (22, 80, 443)
-- No direct internet access to database
+- VPC with private subnets for RDS database isolation
+- Security groups with minimal required ports (22, 80, 443, 3306)
+- RDS in private subnet with no direct internet access
 
 ### Application Security
 - Ansible Vault for sensitive data encryption
@@ -397,14 +399,15 @@ curl -f http://<PUBLIC_IP>/health || echo "Health check failed"
 4. **Network Timing**: Occasional delays in EC2 instance readiness
 
 ### Improvements for Production
-1. **Multi-AZ Deployment**: High availability across availability zones
+1. **Multi-AZ RDS**: High availability database across availability zones
 2. **Load Balancer**: Application Load Balancer for traffic distribution
-3. **RDS Database**: Managed database service instead of self-hosted MariaDB
+3. **RDS Scaling**: Read replicas and automated scaling
 4. **CI/CD Pipeline**: GitLab/GitHub Actions for automated deployments
 5. **Monitoring**: CloudWatch, Prometheus, or DataDog integration
-6. **Backup Strategy**: Automated database and application backups
+6. **Backup Strategy**: RDS automated backups and point-in-time recovery
 
 ### Cost Optimization
+
 - **Spot Instances**: 70% cost reduction for non-critical environments
 - **Reserved Instances**: Long-term cost savings for production
 - **Auto Scaling**: Dynamic capacity based on demand
@@ -445,5 +448,5 @@ The project serves as a solid foundation for production-ready applications with 
 
 **Project Duration**: 2 weeks
 **Team Size**: 1 developer
-**Technologies**: Terraform, Ansible, AWS, Node.js, MariaDB, Nginx
+**Technologies**: Terraform, Ansible, AWS, Node.js, RDS MySQL, Nginx
 **Deployment Target**: AWS ap-southeast-1 region
