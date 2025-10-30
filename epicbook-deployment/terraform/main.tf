@@ -1,8 +1,8 @@
 
 module "vpc" {
-  source     = "git::https://github.com/imShakil/tfmodules.git//aws/vpc"
-  prefix     = var.prefix
-  cidr_block = var.cidr_block
+  source      = "git::https://github.com/imShakil/tfmodules.git//aws/vpc"
+  prefix      = var.prefix
+  cidr_block  = var.cidr_block
   subnet_size = 2
 }
 
@@ -18,7 +18,7 @@ module "db" {
 
 resource "random_integer" "rint" {
   min = 0
-  max = length(module.vpc.vpc_attribute.public_subnet_ids)-1
+  max = length(module.vpc.vpc_attribute.public_subnet_ids) - 1
   keepers = {
     prefix = var.prefix
   }
