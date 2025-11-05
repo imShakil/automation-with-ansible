@@ -1,0 +1,8 @@
+backend_repo_url: "https://github.com/pravinmishraaws/book-review-app.git"
+backend_app_port: 3001
+allowed_origins: "http://{{ hostvars[groups['frontend'][0]]['inventory_hostname'] }}"
+backend_dir: "/opt/backend"
+db_name: "book_review_db"
+db_user: "bk_review_user"
+db_password: "book_review_password"
+jwt_secret: "your_jwt_secret"

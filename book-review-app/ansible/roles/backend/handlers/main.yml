@@ -1,0 +1,10 @@
+- name: Restart backend
+  ansible.builtin.shell: |
+    cd "{{ backend_dir }}"
+    pm2 delete all || true
+    pm2 start ecosystem.config.js
+    pm2 save
+  args:
+    executable: /bin/bash
+  register: restart_backend
+  changed_when: true

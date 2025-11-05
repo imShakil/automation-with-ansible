@@ -1,0 +1,25 @@
+- name: Install nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+
+- name: Start and enable nginx
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+  tags: ['nginx']
+
+- name: Configure default nginx config
+  ansible.builtin.template:
+    src: default.j2
+    dest: /etc/nginx/sites-available/default
+    mode: '0755'
+    backup: true
+  notify: Restart nginx
+  tags: ['nginx']
+
+- name: Test Application Public Access
+  ansible.builtin.uri:
+    url: 'http://{{ inventory_hostname }}'
+    return_content: true

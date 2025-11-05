@@ -1,0 +1,5 @@
+rds_endpoint: "myrds20251105062356628700000006.cjy24seigdl9.ap-southeast-1.rds.amazonaws.com"
+rds_port: "3306"
+rds_name: "bookReview"
+rds_admin: "imshakil"
+rds_admin_password: "SecurePass123!"

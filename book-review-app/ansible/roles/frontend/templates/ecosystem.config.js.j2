@@ -1,0 +1,13 @@
+module.exports = {
+        apps : [{
+          name: 'bkr-frontend',
+          script: 'npm',
+          args: 'start',
+          cwd: '{{ frontend_dir }}',
+          env: {
+            NEXT_PUBLIC_API_URL: 'http://{{ inventory_hostname }}',
+            PORT: '{{ frontend_app_port }}',
+            NODE_ENV: 'production'
+          }
+        }]
+      };

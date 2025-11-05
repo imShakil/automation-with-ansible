@@ -1,0 +1,30 @@
+- name: Setup Common Configuration on All Servers
+  hosts: all
+  become: true
+  roles:
+    - common
+
+- name: Deploy Backend Application
+  hosts: backend
+  become: true
+  vars_files:
+    - backend.yml
+    - group_vars/rds_info.yml
+  roles:
+    - backend
+
+- name: Deploy Frontend Application
+  hosts: frontend
+  become: true
+  vars_files:
+    - frontend.yml
+  roles:
+    - frontend
+
+- name: Setup NGINX server
+  hosts: frontend
+  become: true
+  vars_files:
+    - frontend.yml
+  roles:
+    - nginx

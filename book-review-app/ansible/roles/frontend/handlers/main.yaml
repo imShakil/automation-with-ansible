@@ -1,0 +1,10 @@
+- name: Restart frontend
+  ansible.builtin.shell: |
+    cd "{{ frontend_dir }}"
+    pm2 delete all || true
+    pm2 start ecosystem.config.js
+    pm2 save
+  args:
+    executable: /bin/bash
+  register: restart_frontend
+  changed_when: true

@@ -1,0 +1,60 @@
+- name: Clone frontend repository
+  ansible.builtin.git:
+    repo: "{{ frontend_repo_url }}"
+    dest: /tmp/frontend
+    version: main
+    force: true
+- name: Copy frontend part
+  ansible.builtin.copy:
+    src: /tmp/frontend/frontend
+    dest: "/opt"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+    remote_src: true
+
+- name: Set Ownership to User
+  ansible.builtin.file:
+    path: "{{ frontend_dir }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    recurse: true
+    mode: '755'
+
+- name: Install Frontend Dependencies
+  community.general.npm:
+    path: "{{ frontend_dir }}"
+    state: present
+
+- name: Create Environment file
+  ansible.builtin.copy:
+    content: |
+      NEXT_PUBLIC_API_URL=http://{{ inventory_hostname }}
+    dest: "{{ frontend_dir }}/.env"
+    mode: '0755'
+
+- name: Build Application
+  ansible.builtin.shell: |
+    cd "{{ frontend_dir }}"
+    npm run build
+  args:
+    executable: /bin/bash
+  changed_when: true
+
+- name: Create PM2 ecosystem.config.js
+  ansible.builtin.template:
+    src: ecosystem.config.js.j2
+    dest: "{{ frontend_dir }}/ecosystem.config.js"
+    mode: '0755'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  notify: Restart frontend
+
+- name: Start frontend application
+  ansible.builtin.shell: |
+    cd "{{ frontend_dir }}"
+    pm2 start ecosystem.config.js
+    pm2 save
+  args:
+    executable: /bin/bash
+  changed_when: true

@@ -1,0 +1,47 @@
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+      - curl
+      - git
+      - mysql-client
+      - python3-pip
+    state: present
+
+- name: Download NodeSource setup script
+  ansible.builtin.get_url:
+    url: https://deb.nodesource.com/setup_18.x
+    dest: /tmp/nodesource_setup.sh
+    mode: '0755'
+
+- name: Run NodeSource setup script
+  ansible.builtin.shell: |
+    set -o pipefail
+    bash /tmp/nodesource_setup.sh
+  args:
+    executable: /bin/bash
+    creates: /etc/apt/sources.list.d/nodesource.list
+  changed_when: true
+
+- name: Install NodeJS
+  ansible.builtin.apt:
+    name: nodejs
+    state: present
+    update_cache: true
+
+- name: Install PM2 globally
+  community.general.npm:
+    name: pm2
+    global: true
+    state: present
+
+- name: Setup PM2 to start on boot
+  ansible.builtin.shell: |
+    set -o pipefail
+    pm2 startup systemd -u {{ ansible_user }} --hp /home/{{ ansible_user }}
+  args:
+    executable: /bin/bash
+  changed_when: true

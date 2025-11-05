@@ -1,0 +1,4 @@
+frontend_repo_url: "https://github.com/pravinmishraaws/book-review-app.git"
+frontend_app_port: 3000
+backend_api_url: "http://{{ hostvars[groups['backend'][0]]['ansible_default_ipv4']['address'] }}:3001"
+frontend_dir: "/opt/frontend"

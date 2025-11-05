@@ -1,0 +1,15 @@
+module.exports = {
+        apps : [{
+          name: 'bkr-backend',
+          script: 'src/server.js',
+          env: {
+            DB_HOST: '{{ rds_endpoint }}',
+            DB_USER: '{{ db_user }}',
+            DB_PASS: '{{ db_password }}',
+            DB_NAME: '{{ db_name }}',
+            DB_DIALECT: 'mysql',
+            JWT_SECRET: '{{ jwt_secret }}',
+            ALLOWED_ORIGINS: '{{ allowed_origins }}'
+          }
+        }]
+      };

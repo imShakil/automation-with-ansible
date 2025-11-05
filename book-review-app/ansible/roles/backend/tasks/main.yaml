@@ -1,0 +1,73 @@
+- name: Clone book review repository
+  ansible.builtin.git:
+    repo: "{{ backend_repo_url }}"
+    dest: /tmp/backend
+    version: 'main'
+    force: 'yes'
+
+- name: Copy backend project
+  ansible.builtin.copy:
+    src: /tmp/backend/backend
+    dest: "/opt"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+    remote_src: true
+
+- name: Set Ownership to User
+  ansible.builtin.file:
+    path: "{{ backend_dir }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    recurse: true
+    mode: '755'
+
+- name: Install backend dependencies
+  community.general.npm:
+    path: "{{ backend_dir }}"
+    state: present
+
+- name: Install PyMySQL
+  ansible.builtin.pip:
+    name: PyMySQL
+    state: present
+  tags: ['database']
+
+- name: Create App Database
+  community.mysql.mysql_db:
+    name: "{{ db_name }}"
+    state: present
+    login_host: "{{ rds_endpoint }}"
+    login_user: "{{ rds_admin }}"
+    login_password: "{{ rds_admin_password }}"
+  tags: ['database']
+
+- name: Create database user
+  community.mysql.mysql_user:
+    name: "{{ db_user }}"
+    host: "%"
+    password: "{{ db_password }}"
+    priv: "{{ db_name }}.*:ALL"
+    state: present
+    login_user: "{{ rds_admin }}"
+    login_password: "{{ rds_admin_password }}"
+    login_host: "{{ rds_endpoint }}"
+  tags: ['database']
+
+- name: Create PM2 ecosystem.config.js for backend
+  ansible.builtin.template:
+    src: ecosystem.config.js.j2
+    dest: "{{ backend_dir }}/ecosystem.config.js"
+    mode: '0755'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  notify: Restart backend
+
+- name: Start backend application
+  ansible.builtin.shell: |
+    cd "{{ backend_dir }}"
+    pm2 start ecosystem.config.js
+    pm2 save
+  args:
+    executable: /bin/bash
+  changed_when: true
