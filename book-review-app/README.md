@@ -63,7 +63,7 @@ ansible-playbook -i inventory.ini bookreview.yaml
 
 ### Network Flow
 
-```
+```txt
 User → Nginx (port 80) → Frontend (port 3000)
                       → Backend (port 3001) → RDS
 ```
